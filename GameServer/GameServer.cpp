@@ -1,59 +1,49 @@
 ﻿#include "pch.h"
 #include <iostream>
 #include "Corepch.h"
-
 #include <thread> // 리눅스든 윈도우든 상관없음
+#include <atomic> // 리눅스든 윈도우든 상관없음
+// atomic atom(원자) -> All - Or -Nothing
 
-//#include <Windows.h>
+// DB 와 관련된 작업을 할 때
+// A라는 유저 인벤에서 집행검을 빼고
+// B라는 유저 인벤에 집행검을 추가 할 때 
+// ->atomic 한 연산이 필요하다. 한번에 다 일어나거나 아예 일어나지않게 하는것
 
-void HelloThread()
+atomic<int32> sum = 0;		//int32 sum = 0;
+// 생각보다 연산이 많이 느리다 
+void Add()
 {
-	cout << "Hello Thread" << endl;
+	for (int32 i = 0; i < 100'0000; ++i)
+	{
+		sum.fetch_add(1);
+		//++sum;
+	}
 }
 
-void HelloThread_2(int32 num)
+void Sub()
 {
-	cout << num << endl;
+	for (int32 i = 0; i < 100'0000; ++i)
+	{
+		sum.fetch_sub(1);
+	
+		//--sum;
+	}
 }
+
 
 int main()
 {
-	
-	// System Call (OS 커널 요청)
-	// ::CreateThread()  : 윈도우에 종속적인 함수
+	/*Add();
+	Sub();
+	cout << sum << endl;*/
 
-	// vector<std::thread> 사용예제
-	vector<std::thread> v;
-	
-	for (int32 i = 0; i < 10; i++)
-	{
-		v.push_back(std::thread(HelloThread_2, i));
-	}
+	std::thread t1(Add);
+	std::thread t2(Sub);
+	t1.join();
+	t2.join();
+	cout << sum << endl;  // 실행 할 때마다 값이 다르다
+					      // 공유 데이터를 사용할 때 문제점이 발생한다. -> 동기화의 필요성
 
-	for (int32 i = 0; i < 10; i++)
-	{
-		if (v[i].joinable())
-			v[i].join();
-	}
-
-
-	//std::thread t1;
-	//auto count1 = t1.get_id();
-	//t1 = std::thread(HelloThread_2,10);
-
-	//std::thread t(HelloThread); //  ==  std::thread t;  t= std::thread(Helloworld);
-	//int32 count = t.hardware_concurrency();	// CPU 코어 개수?  -> 100% 장담은 못하지만 왠만한 환경에서 나온다.
-	//auto id = t.get_id();								// 각 쓰레드마다 id  (들쑥날쑥한 값이나(*연속적이지 않음) 쓰레드마다 값이 다르다.) 
-	//
-	////t.detach();			// 쓰레드의 연결고리를 끊어주겠다 -> std::thread 객체에서 실제 쓰레드를 분리한다.
-	////					// 분리를 하면 만들어준 쓰레드의 정보 추출이 불가능하다. 
-	////t.joinable();		// 쓰레드객체가 존재하는지 아닌지 확인하는 함수
-	//
-	//if (t.joinable())
-	//{
-	//	t.join();
-	//}
-
-	cout << "Hello Main" << endl;
 }
 
