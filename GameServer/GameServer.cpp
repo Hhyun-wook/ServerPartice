@@ -35,7 +35,11 @@ public:
 		// 앞에 있는 쓰레드가 늦게 끝나면 계속해서 체크를 해야하기 때문에 CPU의 성능이 줄어들음
 		while (_locked.compare_exchange_strong(expected, desired) == false)
 		{
-			expected = false;
+			expected = false;  // 무한루프라서 실패하면 CPU 낭비함
+
+			this_thread::sleep_for(std::chrono::microseconds(100));
+			//this_thread::sleep_for(100ms);
+			//this_thread::yield(); //yield 양보한다. == sleep_for(0ms); 그냥 반환해준다.
 		}
 
 	
