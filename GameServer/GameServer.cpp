@@ -5,89 +5,60 @@
 #include <atomic> // 리눅스든 윈도우든 상관없음
 #include <mutex>  // 리눅스든 윈도우든 상관없음
 
-
-class SpinLock
-{
-public:
-	
-
-	void lock()
-	{
-		// CAS (Compare -And -Swap)
-
-		bool expected = false;
-		bool desired = true;
-
-		//// CAS 의사코드
-
-		//if (_locked == expected)
-		//{
-		//	_locked = desired;
-		//	return true;
-		//}
-		//else
-		//{
-		//	expected = _locked;
-		//	return false;
-		//}
-
-		// 앞에 있는 쓰레드가 빨리끝나면 컨텍스트 스위칭이 일어나지 않아 CPU의 성능이 증가하나
-		// 앞에 있는 쓰레드가 늦게 끝나면 계속해서 체크를 해야하기 때문에 CPU의 성능이 줄어들음
-		while (_locked.compare_exchange_strong(expected, desired) == false)
-		{
-			expected = false;  // 무한루프라서 실패하면 CPU 낭비함
-
-			this_thread::sleep_for(std::chrono::microseconds(100));
-			//this_thread::sleep_for(100ms);
-			//this_thread::yield(); //yield 양보한다. == sleep_for(0ms); 그냥 반환해준다.
-		}
-
-	
-	}
-
-	void unlock()
-	{
-		//_locked = false;
-		_locked.store(false);
-	}
-
-private:
-	atomic<bool> _locked = false; //  volatile : c++ 최적화를 하지마라! 거의 사용하지않는다.
-							
-};
+#include <windows.h>
 
 mutex m;
-int32 sum = 0;
-SpinLock spinLock;
+queue<int32> q;
+HANDLE handle; 
 
-
-void Add()
+void Producer()
 {
-	for (int32 i = 0; i < 10'0000; ++i)
+	while (true)
 	{
-		lock_guard<SpinLock> guard(spinLock);
-		++sum;
+		{
+			unique_lock<mutex> lock(m);
+			q.push(100);
+		}
+
+		::SetEvent(handle);		// 상태를 시그널상태로 바꿔주는 것이다.
+
+		this_thread::sleep_for(10000ms);
 	}
 }
 
-void Sub()
+void Consumer()
 {
-	for (int32 i = 0; i < 10'0000; ++i)
+	while (true)
 	{
-		lock_guard<SpinLock> guard(spinLock);
-		--sum;
+		::WaitForSingleObject(handle, INFINITE);		// 시그널상태가 아니면 무한히 대기한다. 대기를 함으로써 의미없는 CPU의 작업을 안할 수 있다.
+		//::ResetEvent(handle);
+		unique_lock<mutex> lock(m); 
+
+		if (q.empty() == false)		// queue 가 비어 있는데도 매번 체크하는 작업은 CPU에 부하가 걸릴 수 있다. 
+		{
+			int32 data = q.front();
+			q.pop();
+			cout << data << endl;
+		}
 	}
 }
-
 
 int main()
 {
-	thread t1(Add);
-	thread t2(Sub);
+	// 이벤트는 커널 오브젝트이다.
+	// Usage Count
+	// Signal / Non-Signal  2가지는 커널오브젝트가 가지고 있는 것이다.
+	// Auto  / Manual  << bool 
+	// 이벤트는 다른 커널오브젝트에 비해 가볍다.
+	handle = ::CreateEvent(NULL/*보안속성*/, FALSE /* ManualReset  FALSE == auto True == 수동*/, FALSE /*초기 상태*/, NULL);
+
+	thread t1(Producer);
+	thread t2(Consumer);
 
 	t1.join();
 	t2.join();
 
-	cout << sum << endl;
+	::CloseHandle(handle);
+
 }
 
