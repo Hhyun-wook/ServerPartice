@@ -4,85 +4,111 @@
 #include <thread> // 리눅스든 윈도우든 상관없음
 #include <atomic> // 리눅스든 윈도우든 상관없음
 #include <mutex>  // 리눅스든 윈도우든 상관없음
+#include <future>
 
-#include <windows.h>
+// 단발성이벤트에서는 condition_variable 보다 가벼운 future 가 있다.
 
-mutex m;
-queue<int32> q;
-HANDLE handle; 
 
-// 참고) CV 는 user-Level Object (커널 오브젝트가 아니다)
-// 커널레벨 - 다른 프로젝트에서도 사용가능 
-// 유저레벨 - 동일한 프로젝트에서만 사용가능
-condition_variable cv; // #include <mutex> 를 추가
 
-// 이벤트랑 비슷하긴 하지만 이벤트는 커널모드 condition_variable 은 유저모드이다.
-
-void Producer()
+int64 Calculate()
 {
-	while (true)
+	int64 sum = 0;
+
+	for (int32 i = 0; i < 100'000; ++i)
 	{
-		// 1) Lock을 잡고 
-		// 2) 공유 변수 값을 수정
-		// 3) Lock을 풀고
-		// 4) 조건변수 통해 다른 쓰레드에게 통지
-
-		{
-			unique_lock<mutex> lock(m);
-			q.push(100);
-		}
-
-		cv.notify_one();// wait 중인 쓰레드가 있으면 딱 1개를 꺠운다. == //::SetEvent(handle);		// 상태를 시그널상태로 바꿔주는 것이다.
-
-		// lock 이랑 이벤트는 별개의 사항이다.
-
-		//this_thread::sleep_for(10000ms);
+		sum += i;
 	}
+
+	return sum;
 }
 
-void Consumer()
+void PromiseWorker(std::promise<string>&& promise)
 {
-	while (true)
-	{
-		//::WaitForSingleObject(handle, INFINITE);		// 시그널상태가 아니면 무한히 대기한다. 대기를 함으로써 의미없는 CPU의 작업을 안할 수 있다.
-		//::ResetEvent(handle);
-		
-		unique_lock<mutex> lock(m); 
-		
-		// 1) Lock 을 잡고 (위에서 잡았으면 생략)
-		// 2) (람다식)조건 확인
-		// -> 만족  => 빠져 나와서 이어서 코드를 진행
-		// -> 불만족 => Lock을 풀어주고 대기 상태
-		cv.wait(lock, []() {return q.empty() == false; });
-		// wait 매개변수 인자는 unique_lock 이다.
-		// 그런데 notify_one 을 했으면 항상 조건식을 만족하는거 아닐까?
-		// 가짜 기상에 빠질 수 있으므로 조건식을 사용해야 한다.
-		// notify_one 할 때 lock 을 잡고 있는 것은 아니기 때문에
+	promise.set_value("Value");
+}
 
-		//if (q.empty() == false)		// 람다식에서 조건을 사용했기 때문에 조건을 또 안잡아도 된다.
-		{
-			int32 data = q.front();
-			q.pop();
-			cout << q.size() << endl;
-		}
-	}
+void TaskWorker(std::packaged_task<int64(void)>&& task)
+{
+	task();
 }
 
 int main()
 {
-	// 이벤트는 커널 오브젝트이다.
-	// Usage Count
-	// Signal / Non-Signal  2가지는 커널오브젝트가 가지고 있는 것이다.
-	// Auto  / Manual  << bool 
-	// 이벤트는 다른 커널오브젝트에 비해 가볍다.
-	handle = ::CreateEvent(NULL/*보안속성*/, FALSE /* ManualReset  FALSE == auto True == 수동*/, FALSE /*초기 상태*/, NULL);
+	// 동기 방식 실행
+	int64 sum = Calculate();
+	cout << sum << endl;
 
-	thread t1(Producer);
-	thread t2(Consumer);
+	// std::future == 비동기 실행
+	{
+		// std::async 옵션
+		// 1) deferred -> lazy evaluation 지연해서 실행하세요 -> 멀티 쓰레드 x 나중에 호출하세요
+		// 2) async -> 별도의 쓰레드를 만들어서 실행하세요  -> 병렬로 연산가능 (비동기랑 멀티쓰레드랑 같은 의미는 아니다.)
+		// 3) deferred | async -> 둘중 알아서 골라주세요
+		// ex) 서버를 띄웠는데 모든 데이터파일을 로드해서 해야하는데 시간이 오래걸린다. 
+		//     그래서 비동기 방식을 통해 만남의 장소에서 호출의 완료되면 끝나게한다.
+		std::future<int64> future = std::async(std::launch::async, Calculate);
+		
+		// 언젠가 미래에 결과물을 뱉어줄거야! == std::future
 
-	t1.join();
-	t2.join();
+		// 딴짓 해도 가능
+		int64 sum = future.get(); // 결과물이 이제서야 필요하다! 
+		
+		std::future_status status =future.wait_for(1ms); // 작업이 끝났는지 잠시 살펴보는 기능
+		if (status == future_status::ready)
+		{
 
+		}
+
+		future.wait(); // 결과물이 이제 필요하다!
+
+		
+
+		class Knight
+		{
+		public:
+			int64 GetHp() { return 100; }
+		};
+
+		Knight knight;
+		std::future<int64> future2 = std::async(std::launch::async, &Knight::GetHp, knight);
+		// 클래스에 속한 멤버 함수는 어떤 객체에 의존적으로 호출되므로 클래스명을 붙어야한다.
+
+		//std::promise
+		{
+			// 미래(std::future)의 결과물을 반환해줄거라 약속해줘(std::promise)
+			std::promise<string> promise;
+			std::future<string> future = promise.get_future(); // 1 : 1 로 연동된 상태이다.
+
+			thread t(PromiseWorker, std::move(promise));
+			
+			string msg = future.get(); // future.get은 한번만 호출해야한다.
+			cout << msg << endl;
+			t.join();
+		}
+
+
+		// std::packaged_task
+		{
+			std::packaged_task<int64(void)> task(Calculate); // 함수 인풋 아웃풋 순서대로 <>안에 써줘야한다.
+			std::future<int64> future = task.get_future();
+
+			std::thread t(TaskWorker, std::move(task));
+
+			int64 sum = future.get();
+			cout << sum << endl;
+			t.join();
+		}
+
+		// 결론) 
+		// mutex , condition_variable 까지 가지 않고 단순한 애들을 처리할 수 있는 future 사용예시 (딱한번, 단순히 한번) 이런경우
+		// 특히나 , 한 번 발생하는 이벤트에 유용하다.
+		// 1. async
+		//  원하는 함수를 비동기적으로 실행
+		// 2. promise
+		// 결과물을 promise 를 통해 futrue로 받아줌
+		// 3. packaged_task
+		// 원하는 함수의 실행 결과를 packaged_task를 통해 future로 받아줌
+	}
 
 }
 
