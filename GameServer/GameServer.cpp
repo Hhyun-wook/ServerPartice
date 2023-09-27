@@ -8,101 +8,69 @@
 #include <Windows.h>
 #include "ThreadManager.h"
 
-#include "PlayerManager.h"
-#include "AccountManager.h"
+// 소수 구하기
 
+// 1과 자기 자신으로만 나뉘면 그것을 소수라고함
 
-//
-//// mutex 를 집적 구현해서 사용해야 되는 이유
-//// 1) 표준 뮤텍스는 재귀적으로 락을 잡을 수 없다.
-//// 2) 경우에 따라서 가끔 상호배타적이지 않은 특성이 필요한 경우가 있다.
-////	  하지만 표준 뮤텍스는 상호배타적이기 때문에 만들필요가있다.
-////  상호배타적 : 두사건은 공유된 결과가 없다.
-//
-//class TestLock
-//{
-//	USE_LOCK;
-//
-//public:
-//	int32 TestRead()
-//	{
-//		READ_LOCK;
-//
-//		if (_queue.empty())
-//			return -1;
-//
-//		return _queue.front();
-//	}
-//
-//	void TestPush()
-//	{
-//		WRITE_LOCK;
-//
-//		_queue.push(rand() % 100);
-//	}
-//
-//	void TestPop()
-//	{
-//		WRITE_LOCK;
-//
-//	
-//		if (_queue.empty() == false)
-//			_queue.pop();
-//	}
-//
-//
-//private:
-//	queue<int32> _queue;
-//};
-//
-//
-//TestLock testLock;
-//
-//void ThreadWrite()
-//{
-//	while (true)
-//	{
-//		testLock.TestPush();
-//		this_thread::sleep_for(1ms);
-//		testLock.TestPop();
-//	}
-//}
-//
-//void ThreadRead()
-//{
-//	while (true)
-//	{
-//		int32 value = testLock.TestRead();
-//		cout << value << endl;
-//		this_thread::sleep_for(1ms);
-//	}
-//}
+bool IsPrime(int number)
+{
+	if (number <= 1)
+		return false;
+	if (number == 2 || number == 3)
+		return true;
+
+	for (int i = 2; i < number; ++i)
+	{
+		if ((number % i) == 0)
+			return false;
+	}
+
+	return true;
+}
+
+//[start,end]
+int CountPrime(int start, int end)
+{
+	int count = 0;
+
+	for (int i = start; i <= end; ++i)
+	{
+		if (IsPrime(i))
+			++count;
+	}
+
+	return count;
+}
 
 int main()
 {
-	GThreadManager->Launch([=]
-		{
-			while (true)
+	const int MAX_NUMBER = 100'000;
+
+	// 1 ~ MAX_NUMBER 까지의 소수 개수
+
+	vector<thread> threads;
+
+	int coreCount = thread::hardware_concurrency();
+	int jobCount = (MAX_NUMBER / coreCount)+1;
+
+	atomic<int32> primeCount = 0;
+
+	for (int i = 0; i < coreCount; ++i)
+	{
+		int start = (i * jobCount) + 1;
+		int end = min(MAX_NUMBER, ((i + 1) * jobCount));
+
+		threads.push_back(thread([start, end, &primeCount]()
 			{
-				cout << "AccountThenPlayer" << endl;
-				GAccountManager.AccountThenPlayer();
-				
-				this_thread::sleep_for(1s);
-			}
+				primeCount += CountPrime(start, end);
+			}));
+	}
 
-		});
+	for (thread &t : threads)
+	{
+		t.join();
+	}
 
+	cout << primeCount << endl;
 
-	GThreadManager->Launch([=]
-		{
-			while (true)
-			{
-				cout << "PlayerTheAccount" << endl;
-				GPlayerManager.PlayerThenAccount();
-				this_thread::sleep_for(1s);
-			}
-
-		});
-
-	GThreadManager->Join();
 }
