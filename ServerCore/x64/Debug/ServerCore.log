@@ -1,2 +1,7 @@
-﻿  CorePch.cpp
-  ServerCore.vcxproj -> C:\Users\cokou\source\repos\Server\Libaries\Debug\ServerCore.lib
+﻿  pch.cpp
+  CoreGlobal.cpp
+  CorePch.cpp
+  CoreTLS.cpp
+  ThreadManager.cpp
+  코드를 생성하고 있습니다...
+  ServerCore.vcxproj -> C:\Users\cokou\source\repos\ServerPartice\Libaries\Debug\ServerCore.lib
