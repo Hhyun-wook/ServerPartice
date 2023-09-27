@@ -19,7 +19,12 @@
     <ClInclude Include="CoreGlobal.h">
       <Filter>Main</Filter>
     </ClInclude>
-    <ClInclude Include="ThreadManager.h" />
+    <ClInclude Include="ThreadManager.h">
+      <Filter>Thread</Filter>
+    </ClInclude>
+    <ClInclude Include="Lock.h">
+      <Filter>Thread</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CorePch.cpp">
@@ -34,7 +39,12 @@
     <ClCompile Include="CoreTLS.cpp">
       <Filter>Main</Filter>
     </ClCompile>
-    <ClCompile Include="ThreadManager.cpp" />
+    <ClCompile Include="Lock.cpp">
+      <Filter>Thread</Filter>
+    </ClCompile>
+    <ClCompile Include="ThreadManager.cpp">
+      <Filter>Thread</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Utills">
