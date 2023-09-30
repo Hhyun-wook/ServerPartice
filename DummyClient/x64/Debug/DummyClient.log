@@ -1,6 +1,7 @@
 ﻿  DummyClient.cpp
+C:\Program Files (x86)\visual\VC\Tools\MSVC\14.29.30133\include\xiosbase(379,46): warning C4003: 함수 같은 매크로 호출 'xalloc'에 대해 인수가 부족합니다.
+C:\Program Files (x86)\visual\VC\Tools\MSVC\14.29.30133\include\xiosbase(379,46): error C2653: 'BaseAllocator': 클래스 또는 네임스페이스 이름이 아닙니다.
   pch.cpp
+C:\Program Files (x86)\visual\VC\Tools\MSVC\14.29.30133\include\xiosbase(379,46): warning C4003: 함수 같은 매크로 호출 'xalloc'에 대해 인수가 부족합니다.
+C:\Program Files (x86)\visual\VC\Tools\MSVC\14.29.30133\include\xiosbase(379,46): error C2653: 'BaseAllocator': 클래스 또는 네임스페이스 이름이 아닙니다.
   코드를 생성하고 있습니다...
-ServerCore.lib(CorePch.obj) : warning LNK4099: '' PDB를 'ServerCore.lib(CorePch.obj)' 또는 ''에서 찾을 수 없습니다. 디버그 정보가 없는 것처럼 개체를 링크합니다.
-ServerCore.lib(pch.obj) : warning LNK4099: 'ServerCore.pdb' PDB를 'ServerCore.lib(pch.obj)' 또는 'C:\Users\cokou\source\repos\ServerPartice\Binary\Debug\ServerCore.pdb'에서 찾을 수 없습니다. 디버그 정보가 없는 것처럼 개체를 링크합니다.
-  DummyClient.vcxproj -> C:\Users\cokou\source\repos\ServerPartice\Binary\Debug\DummyClient.exe

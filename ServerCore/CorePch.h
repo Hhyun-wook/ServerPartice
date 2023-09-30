@@ -20,5 +20,3 @@
 using namespace std;
 
 #include "Lock.h"
-
-void HelloWorld();
