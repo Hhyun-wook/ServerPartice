@@ -1,4 +1,1 @@
-﻿  DummyClient.cpp
-  pch.cpp
-  코드를 생성하고 있습니다...
-C:\Users\cokou\source\repos\ServerPartice\DummyClient\DummyClient.cpp : fatal error C1090: PDB API를 호출하지 못했습니다. 오류 코드 '3': C:\Users\cokou\source\repos\ServerPartice\DummyClient\x64\Debug\vc142.pdb
+﻿  DummyClient.vcxproj -> C:\Users\cokou\source\repos\ServerPartice\Binary\Debug\DummyClient.exe
