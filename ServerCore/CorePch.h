@@ -16,7 +16,7 @@
 
 #include <Windows.h>
 #include <iostream>
-
+#include "Memory.h"
 using namespace std;
 
 #include "Lock.h"

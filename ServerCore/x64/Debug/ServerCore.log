@@ -1,7 +1,12 @@
-﻿C:\Program Files (x86)\visual\MSBuild\Microsoft\VC\v160\Microsoft.CppCommon.targets(550,5): error MSB6003: 지정한 작업 실행 파일 "CL.exe"을(를) 실행할 수 없습니다. System.IO.IOException: 'C:\USERS\COKOU\SOURCE\REPOS\SERVERPARTICE\SERVERCORE\X64\DEBUG\SERVERCORE.PCH' 파일은 다른 프로세스에서 사용 중이므로 프로세스에서 액세스할 수 없습니다.
-C:\Program Files (x86)\visual\MSBuild\Microsoft\VC\v160\Microsoft.CppCommon.targets(550,5): error MSB6003:    위치: System.IO.__Error.WinIOError(Int32 errorCode, String maybeFullPath)
-C:\Program Files (x86)\visual\MSBuild\Microsoft\VC\v160\Microsoft.CppCommon.targets(550,5): error MSB6003:    위치: System.IO.FileInfo.Delete()
-C:\Program Files (x86)\visual\MSBuild\Microsoft\VC\v160\Microsoft.CppCommon.targets(550,5): error MSB6003:    위치: Microsoft.Build.CPPTasks.TrackedVCToolTask.DeleteFiles(ITaskItem[] filesToDelete)
-C:\Program Files (x86)\visual\MSBuild\Microsoft\VC\v160\Microsoft.CppCommon.targets(550,5): error MSB6003:    위치: Microsoft.Build.CPPTasks.CL.ComputeOutOfDateSources()
-C:\Program Files (x86)\visual\MSBuild\Microsoft\VC\v160\Microsoft.CppCommon.targets(550,5): error MSB6003:    위치: Microsoft.Build.CPPTasks.TrackedVCToolTask.SkipTaskExecution()
-C:\Program Files (x86)\visual\MSBuild\Microsoft\VC\v160\Microsoft.CppCommon.targets(550,5): error MSB6003:    위치: Microsoft.Build.Utilities.ToolTask.Execute()
+﻿  pch.cpp
+  Allocator.cpp
+  CoreGlobal.cpp
+  CorePch.cpp
+  CoreTLS.cpp
+  DeadlockProfiler.cpp
+  Lock.cpp
+  Memory.cpp
+  RefCounting.cpp
+  ThreadManager.cpp
+  코드를 생성하고 있습니다...
+  ServerCore.vcxproj -> C:\Users\cokou\source\repos\ServerPartice\Libaries\Debug\ServerCore.lib

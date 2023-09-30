@@ -10,7 +10,14 @@
 #include "RefCounting.h"
 #include "Memory.h"
 
-class Knight
+class Player
+{
+public:
+	Player() {}
+	~Player() {}
+};
+
+class Knight :public Player
 {
 public:
 	Knight()
@@ -29,65 +36,49 @@ public:
 		cout << "~Knight()" << endl;
 	}
 
-	//// 이런식으로 관리해 로그를 찍어볼 수 있다.
-	//// 하지만 매 클래스마다 넣는것은 불편하다.
-	//static void* operator new(size_t size)
-	// {
-	//	 cout << "new~!" << size << endl;
-	//	 void* ptr = ::malloc(size);
-	//	 return ptr;
-	// }
-
-	//static void operator delete(void* ptr)
-	// {
-	//	 cout << "delete!" << endl;
-	//	 ::free(ptr);
-	// }
-
-
 
 public:
 	int32 _hp = 100;
 	int32 _mp = 10;
 };
 
-// 전역적인 오퍼레이터는 위험하다.
-//// new operator overloading (Global)
-//void* operator new(size_t size)
-//{
-//	cout << "new~!" << size << endl;
-//	void* ptr = ::malloc(size);
-//	return ptr;
-//}
-//
-//void operator delete(void* ptr)
-//{
-//	cout << "delete!" << endl;
-//	::free(ptr);
-//}
-//
-//void* operator new[](size_t size)
-//{
-//	cout << "new[]!" << size << endl;
-//	void* ptr = ::malloc(size);
-//	return ptr;
-//}
-//
-//void operator delete[](void* ptr)
-//{
-//	cout << "delete !" << endl;
-//	::free(ptr);
-//}
-
 
 int main()
 {
-	// new :	opeator new 를 사용해 호출 -> 생성자 호출
-	Knight* knight = xnew<Knight>();
+	// 가상메모리 기본
+	// 유저레벨(메모장,  롤, 서버)
+	// -------------------------
+	// 커널레벨 (OS_Code)
 
+	//SYSTEM_INFO info;
+	//::GetSystemInfo(&info);
+
+	//info.dwPageSize;		// 4kb
+	//info.dwAllocationGranularity; // 64kb
+
+	/*int* num = new int;
+	*num = 100;
+
+	int64 address = reinterpret_cast<int64>(num);
+	cout << address;*/
+
+
+
+	// new Delete 는 힙영역을 유동적으로 관리한다.
+	// (windowAPI를 직접이용해서 하는)VirtualAlloc, VirtualFree 직접 관리한다.
+	//  (windowAPI를 직접이용해서 하는) 함수는 그래서 메모리침범이 확인되면 잡아줄 수있다.
+
+	/*Knight* knight = xnew<Knight>(100);
+
+	xdelete(knight);*/
+	
+	//knight->_hp = 100; //댕글리 포인터를 잡을 수있다.
+
+	// 하지만 오버플로우를 잡을 수없다.
+	Knight* knight = (Knight*)xnew<Player>();
+	knight->_hp = 100;  // 업캐스팅 했는데 문제 없이동작함 ->오버플로우
 	xdelete(knight);
- 
-		
-
+	// [               [여기다가] ] 넣는식으로
+	// StumpAllocator를 수정한다.
 
 }
