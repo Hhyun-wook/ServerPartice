@@ -1,1 +1,6 @@
-﻿  DummyClient.vcxproj -> C:\Users\cokou\source\repos\ServerPartice\Binary\Debug\DummyClient.exe
+﻿  DummyClient.cpp
+  pch.cpp
+  코드를 생성하고 있습니다...
+ServerCore.lib(CorePch.obj) : warning LNK4099: '' PDB를 'ServerCore.lib(CorePch.obj)' 또는 ''에서 찾을 수 없습니다. 디버그 정보가 없는 것처럼 개체를 링크합니다.
+ServerCore.lib(pch.obj) : warning LNK4099: 'ServerCore.pdb' PDB를 'ServerCore.lib(pch.obj)' 또는 'C:\Users\cokou\source\repos\ServerPartice\Binary\Debug\ServerCore.pdb'에서 찾을 수 없습니다. 디버그 정보가 없는 것처럼 개체를 링크합니다.
+  DummyClient.vcxproj -> C:\Users\cokou\source\repos\ServerPartice\Binary\Debug\DummyClient.exe
