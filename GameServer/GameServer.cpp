@@ -9,91 +9,40 @@
 #include "ThreadManager.h"
 #include "RefCounting.h"
 
-class Wraight : public RefCountable
-{
-public:
 
-
-public:
-	int _hp = 150;
-	int _posX = 0;
-	int _posY = 0;
-
-};
-
-using WraightRef = TSharedPtr<Wraight>;
-
-class Missile : public RefCountable
-{
-public:
-	
-	void SetTarget(WraightRef target)
-	{ 
-		// 싱글스레드에서 상관없지만 멀티쓰레드에서는 문제가 된다.
-		_target = target;
-		// 중간에 개입 가능하다.(멀티쓰레드에서 문제가 생김)
-		//target->AddRef();  // 래퍼랜스 카운트를 증가시키는 것이랑
-	}
-
-	void Test(WraightRef& target)
-	{
-		// 복사비용이 아쉬우면 참조를 사용하면 래퍼랜스가 늘어나지않는다.
-		// 그래서 잠시만 사용할거면 참조를 이용해서 사용하면 래퍼랜스카운트가 증가하지않는다.
-	}
-
-
-	bool Update()
-	{
-		if (_target == nullptr)
-			return true;
-
-		int PosX = _target->_posX;
-		int PosY = _target->_posY;
-	
-		if (_target->_hp == 0)
-		{
-			_target->ReleaseRef();
-			_target = nullptr;
-			return true;
-		}
-
-		return false;
-	}
-
-	Wraight* _target = nullptr;
-	
-
-};
-
-using MissileRef = TSharedPtr<Missile>;
 
 int main()
 {
-	WraightRef wraight(new Wraight());
-	wraight->ReleaseRef();
+
+
+	// 직접 만든 래퍼랜스카운팅의 한계
+	// 1) 이미 만들어진 클래스 대상으로 사용불가
+	// 2) 표준 shared_ptr도 똑같은 문제 : 순환문제
+	// 순환 문제 : 한 클래스에서 다른 클래스의 객체를 멤버변수로 가지고 있어서
+	//			   지워질때 래퍼랜스카운트가 남아있는 문제입니다.
+	// 또한 클래스에서 객체를 멤버변수로 가질 때 참조형식으로 가지고 
+	//      있으면 순환문제를 해결할 수 있다.
+
+	// Unique_ptr : 생포인터를 사용하는것이랑 차이가 없지만 복사하는 부분이 막혀있다.
+	//			  :  소유권의 이전(이동)은 가능하다.
+	// shared_ptr : 
+	// weak_ptr   : weak 포인터를 이용해서 순환문제를 해결할 수 있다.
+
+	// shared_Ptr을 만들게 되면
+	// [ptr][RefCountingBlock] 
+	// 2개의 포인터로 되어있다. 하나는 포인터, 하나는 레퍼랜스카운팅과관련된 포인터가 있다.
 	
-	MissileRef missile(new Missile());
-	missile->ReleaseRef();
+	// make_shared<T>(); -> [ptr][RefCountingBlock]  : 1+1으로 정보를 넣는다.
+	// RefCountingBlock : shared, weak 둘다 공통으로 사용하는 것이다.
+	// RefCountingBlock (useCount(shared), weakCount)
+	// 둘다 카운트 1로 시작한다. useCount(shared(1)), weakCount(1))
+	shared_ptr<int> spr = make_shared<int>();
+	weak_ptr<int> wpr = spr;
 
+	bool expired = wpr.expired();	// 포인터가 존재하나?
+	shared_ptr<int> spr2 = wpr.lock(); // 다시 shared_ptr로 캐스팅하는법
 
-	
+	// weak_ptr : 상대방의 수명주기에 영향을 주지 않기 때문에 순환문제를 해결할 수 있다.
 
-	missile->SetTarget(wraight);
-		
-	wraight->_hp = 0;
-	//wraight->ReleaseRef();
-	wraight = nullptr;
-
-	while (true)
-	{
-		if (missile->Update())
-		{
-			missile->ReleaseRef();
-			missile = nullptr;
-
-		}
-	}
-	
-	
 
 }
