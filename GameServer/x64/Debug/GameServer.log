@@ -1,2 +1,3 @@
-﻿  GameServer.cpp
+﻿  pch.cpp
+  GameServer.cpp
   GameServer.vcxproj -> C:\Users\cokou\source\repos\ServerPartice\Binary\Debug\GameServer.exe

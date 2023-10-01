@@ -20,8 +20,8 @@ using xVector = vector<T, StlAllocator<T>>;
 template <typename T>
 using xList = list<T, StlAllocator<T>>;
 
-template <typename Key,typename Value,typename Pred = less<Key>>
-using xMap = map<Key, Value,Pred ,StlAllocator<pair<const Key,Type>>>;
+template <typename Key, typename Value, typename Pred = less<Key>>
+using xMap = map<Key, Value, Pred, StlAllocator<pair<const Key, Value>>>;
 
 template <typename Key,  typename Pred = less<Key>>
 using xSet = map<Key, Pred, StlAllocator<const Key>>;

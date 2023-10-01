@@ -46,6 +46,24 @@ public:
 
 int main()
 {
+	for (int32 i = 0; i < 5; ++i)
+	{
+		GThreadManager->Launch([]()
+			{
+				while (true)
+				{
+					vector<Knight> v(10);
+
+					xMap<int32, Knight> m;
+					m[100] = Knight();
+
+					this_thread::sleep_for(10ms);
+				}
+			});
+	}
+
+	GThreadManager->Join();
+
 	vector<Knight,StlAllocator<Knight>> v(100);
 
 	//map<int32, int32> m;
