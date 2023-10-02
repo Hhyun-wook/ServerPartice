@@ -13,8 +13,10 @@
       <Filter>Main</Filter>
     </ClCompile>
     <ClCompile Include="pch.cpp" />
+    <ClCompile Include="LockFreeStack.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
+    <ClInclude Include="LockFreeStack.h" />
   </ItemGroup>
 </Project>
