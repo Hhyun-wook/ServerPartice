@@ -12,25 +12,23 @@
 #include "Memory.h"
 #include "Allocator.h"
 
-#include "LockFreeStack.h"
-
 
 DECLSPEC_ALIGN(16)
-class Data
+class Data  // 1.상속을 받거나 : public SLIST_ENTRY
 {
 public:
-	SListEntry _entry;
+	SLIST_ENTRY _entry;		// 2.멤버변수로 받거나
 	int64 _rand = rand() % 1000;
 };
 
-SListHeader* GHeader;
+SLIST_HEADER* GHeader;
 
 int main()
 {
 
-	GHeader = new SListHeader();
+	GHeader = new SLIST_HEADER();
 	ASSERT_CRASH(((uint64)GHeader % 16) == 0);
-	InitializeHead(GHeader);
+	InitializeSListHead(GHeader);
 		
 	for (int32 i = 0; i < 3; ++i)
 	{
@@ -41,7 +39,7 @@ int main()
 					Data* data = new Data();
 					ASSERT_CRASH(((uint64)data % 16) == 0);
 
-					PushEntrySList(GHeader, (SListEntry*)data);
+					InterlockedPushEntrySList(GHeader, (PSLIST_ENTRY)data);
 					this_thread::sleep_for(10ms);
 				}
 
@@ -55,7 +53,7 @@ int main()
 				while (true)
 				{
 					Data* pop = nullptr;
-					pop = (Data*)PopEntrySList(GHeader);
+					pop = (Data*)InterlockedPopEntrySList(GHeader);
 
 					if (pop)
 					{

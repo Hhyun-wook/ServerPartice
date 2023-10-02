@@ -78,61 +78,60 @@
 /*
 	3차시도
 */
-
-void InitializeHead(SListHeader* header)
-{
-	header->alignment = 0;
-	header->region = 0;
-}
-
-void PushEntrySList(SListHeader* header, SListEntry* entry)
-{
-	SListHeader expected = {};
-	SListHeader desired = {};
-
-	// 16바이트 정렬은 마지막 4개의 비트가 0이다.
-	desired.HeaderX64.next = (((uint64)(entry)) >> 4);
-
-	while (true)
-	{
-		expected = *header;
-
-		// 이 사이에 데이터가 변경될 수 있다.
-		entry->next = (SListEntry*)(((uint64)expected.HeaderX64.next) << 4);
-		desired.HeaderX64.depth = expected.HeaderX64.depth + 1;
-		desired.HeaderX64.sequence = expected.HeaderX64.sequence + 1;
-
-		if (::InterlockedCompareExchange128((int64*)header, desired.region, desired.alignment, (int64*)&expected) == 1)
-			break;
-	}
-
-}
-
-// [][] 
-// Header [next]
-SListEntry* PopEntrySList(SListHeader* header) 
-{
-	SListHeader expected = {};
-	SListHeader desired = {};
-	SListEntry* entry = nullptr;
-
-	while (true)
-	{
-		expected = *header;
-		
-		entry = (SListEntry*)(((uint64)expected.HeaderX64.next) << 4);
-
-		if (entry == nullptr)
-			break;
-
-		// Use- After -Free 문제가 생길 수 있다.
-		desired.HeaderX64.next = ((uint64)entry->next) >> 4;
-		desired.HeaderX64.depth = expected.HeaderX64.depth - 1;
-		desired.HeaderX64.sequence = expected.HeaderX64.sequence + 1;
-
-		if (::InterlockedCompareExchange128((int64*)header, desired.region, desired.alignment, (int64*)&expected) == 1)
-			break;
-	}
-
-	return entry;
-}
+//void InitializeHead(SListHeader* header)
+//{
+//	header->alignment = 0;
+//	header->region = 0;
+//}
+//
+//void PushEntrySList(SListHeader* header, SListEntry* entry)
+//{
+//	SListHeader expected = {};
+//	SListHeader desired = {};
+//
+//	// 16바이트 정렬은 마지막 4개의 비트가 0이다.
+//	desired.HeaderX64.next = (((uint64)(entry)) >> 4);
+//
+//	while (true)
+//	{
+//		expected = *header;
+//
+//		// 이 사이에 데이터가 변경될 수 있다.
+//		entry->next = (SListEntry*)(((uint64)expected.HeaderX64.next) << 4);
+//		desired.HeaderX64.depth = expected.HeaderX64.depth + 1;
+//		desired.HeaderX64.sequence = expected.HeaderX64.sequence + 1;
+//
+//		if (::InterlockedCompareExchange128((int64*)header, desired.region, desired.alignment, (int64*)&expected) == 1)
+//			break;
+//	}
+//
+//}
+//
+//// [][] 
+//// Header [next]
+//SListEntry* PopEntrySList(SListHeader* header) 
+//{
+//	SListHeader expected = {};
+//	SListHeader desired = {};
+//	SListEntry* entry = nullptr;
+//
+//	while (true)
+//	{
+//		expected = *header;
+//		
+//		entry = (SListEntry*)(((uint64)expected.HeaderX64.next) << 4);
+//
+//		if (entry == nullptr)
+//			break;
+//
+//		// Use- After -Free 문제가 생길 수 있다.
+//		desired.HeaderX64.next = ((uint64)entry->next) >> 4;
+//		desired.HeaderX64.depth = expected.HeaderX64.depth - 1;
+//		desired.HeaderX64.sequence = expected.HeaderX64.sequence + 1;
+//
+//		if (::InterlockedCompareExchange128((int64*)header, desired.region, desired.alignment, (int64*)&expected) == 1)
+//			break;
+//	}
+//
+//	return entry;
+//}
