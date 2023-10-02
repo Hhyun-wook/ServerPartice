@@ -1,5 +1,10 @@
 #pragma once
 
+enum
+{
+	SLIST_ALIGNMENT =16,
+};
+
 /*
 	MemoryHeader
 */
@@ -15,7 +20,8 @@
 
 // 그래서 상황에 따라 어떤것을 사용해야할지 고민해야한다.
 
-struct MemoryHeader
+DECLSPEC_ALIGN(SLIST_ALIGNMENT)
+struct MemoryHeader :public SLIST_ENTRY
 {
 	// [MemoryHeader][Data] // 표준 Allocator 객체도 이런식으로 구성되어있다.
 	MemoryHeader(int32 size) : allocSize(size){}
@@ -43,6 +49,8 @@ struct MemoryHeader
 /*
 	MemoryPool
 */
+
+DECLSPEC_ALIGN(SLIST_ALIGNMENT)
 class MemoryPool
 {
 public:
@@ -54,10 +62,9 @@ public:
 
 
 private:
+	SLIST_HEADER _header;	// 첫번째 데이터를 가르킨다.
 	int32 _allocSize = 0;
 	atomic<int32> _allocCount = 0;
 
-	USE_LOCK;
-	queue<MemoryHeader*> _queue;
 };
 

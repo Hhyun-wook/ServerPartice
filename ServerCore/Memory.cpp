@@ -70,7 +70,7 @@ void* Memory::Allocate(int32 size)
 	if (allocSize > MAX_ALLOC_SIZE)
 	{
 		// 메모리 풀링의 최대 크기를 벗어나면 일반 할당
-		header = reinterpret_cast<MemoryHeader*>(::malloc(allocSize));
+		header = reinterpret_cast<MemoryHeader*>(::_aligned_malloc(allocSize,SLIST_ALIGNMENT));
 	}
 	else
 	{
@@ -91,7 +91,7 @@ void Memory::Relase(void* ptr)
 	if (allocSize > MAX_ALLOC_SIZE)
 	{
 		// 큰 크기는 일반할당 하니까 일반해제 한다.
-		::free(header);
+		::_aligned_free(header);
 	}
 	else
 	{
