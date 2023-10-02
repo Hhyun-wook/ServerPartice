@@ -44,6 +44,7 @@
       <Filter>Memory</Filter>
     </ClInclude>
     <ClInclude Include="ObjectPool.h" />
+    <ClInclude Include="TypeCast.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CorePch.cpp">
@@ -80,6 +81,7 @@
       <Filter>Memory</Filter>
     </ClCompile>
     <ClCompile Include="ObjectPool.cpp" />
+    <ClCompile Include="TypeCast.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Utills">

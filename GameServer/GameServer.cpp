@@ -74,11 +74,51 @@
 //
 //}
 
-class Knight
+enum PLAYER_TYPE
+{
+	KNIGHT,
+	MAGE,
+
+};
+
+using TL = TypeList<class Player, class Mage, class Knight, class Archer>;
+
+class Player
+{
+
+
+public:
+	Player()
+	{
+		INIT_TL(Player);
+	}
+
+	virtual ~Player(){}
+	DECLEAR_TL
+
+
+};
+
+class Knight :public Player
 {
 public:
-	int32 _hp = rand() % 100;
+	Knight() { INIT_TL(Knight); }
 };
+
+
+class Mage :public Player
+{
+public:
+	Mage() { INIT_TL(Mage); }
+};
+
+
+class Archer :public Player
+{
+public:
+	Archer() { INIT_TL(Archer); }
+};
+
 
 class Monster
 {
@@ -94,41 +134,42 @@ int main()
 	// 이런식으로하면 기본적인 New delete를 이용한다.
 	// 그래서 메모리,오브젝트풀링시 이런식으로 만들면안된다.
 
-	Knight* knights[100];
+	//Knight* knights[100];
 
-	for (int32 i = 0; i < 100; ++i)
+	//for (int32 i = 0; i < 100; ++i)
+	//{
+	//	knights[i] = ObjectPool<Knight>::Pop();
+	//}
+
+
+	//for (int32 i = 0; i < 100; ++i)
+	//{
+	//	 ObjectPool<Knight>::Push(knights[i]);
+	//	 knights[i] = nullptr;
+	//}
+
+	//shared_ptr<Knight> sptr = { MakeShared<Knight>() };
+
+
 	{
-		knights[i] = ObjectPool<Knight>::Pop();
-	}
+		Player* player = new Player();
 
-
-	for (int32 i = 0; i < 100; ++i)
-	{
-		 ObjectPool<Knight>::Push(knights[i]);
-		 knights[i] = nullptr;
-	}
-
-	shared_ptr<Knight> sptr = { MakeShared<Knight>() };
-
-
-
-
-	for (int32 i = 0; i < 2; ++i)
-	{
-
-		while (true)
-		{
-			Knight* knight = new Knight();
-		
-			cout << knight->_hp <<endl;
-
-			this_thread::sleep_for(10ms);
-
-			xdelete(knight);
-		}
-	}
+		bool canCast = CanCast<Knight*>(player);
+		Knight* knight = TypeCast<Knight*>(player);
 
 		
-			
-	GThreadManager->Join();
+
+		delete player;
+	}
+
+	{
+		shared_ptr<Knight> knight = MakeShared<Knight>();
+
+		shared_ptr<Player> player = TypeCast<Knight>(knight);
+		bool canCast = CanCast<Player>(knight);
+	}
+
+
+
+
 }
