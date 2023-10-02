@@ -15,19 +15,6 @@
 
 
 
-/*
-	Memory
-*/
-
-//#define xxalloc(size)		StompAllocator::Alloc(size)
-//#define xxrelease(ptr)		StompAllocator::Release(ptr)
-#ifdef _DEBUG
-#define xxalloc(size)		PoolAllocator::Alloc(size)
-#define xxrelease(ptr)		PoolAllocator::Release(ptr)
-#else
-#define xxalloc(size)		StompAllocator::Alloc(size)
-#define xxrelease(ptr)		StompAllocator::Release(ptr)
-#endif
 
 /*------------------------
 ---------CRASH---------

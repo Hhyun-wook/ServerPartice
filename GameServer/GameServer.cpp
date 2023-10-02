@@ -80,8 +80,39 @@ public:
 	int32 _hp = rand() % 100;
 };
 
+class Monster
+{
+public:
+	int64 _id = 0;
+};
+
 int main()
 {
+	//Knight* k = ObjectPool<Knight>::Pop();
+	//ObjectPool<Knight>::Push(k);
+	// shared_ptr<Knight>  sptr = make_shared<Knight>();
+	// 이런식으로하면 기본적인 New delete를 이용한다.
+	// 그래서 메모리,오브젝트풀링시 이런식으로 만들면안된다.
+
+	Knight* knights[100];
+
+	for (int32 i = 0; i < 100; ++i)
+	{
+		knights[i] = ObjectPool<Knight>::Pop();
+	}
+
+
+	for (int32 i = 0; i < 100; ++i)
+	{
+		 ObjectPool<Knight>::Push(knights[i]);
+		 knights[i] = nullptr;
+	}
+
+	shared_ptr<Knight> sptr = { MakeShared<Knight>() };
+
+
+
+
 	for (int32 i = 0; i < 2; ++i)
 	{
 

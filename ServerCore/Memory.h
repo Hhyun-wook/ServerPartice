@@ -44,7 +44,7 @@ Type* xnew(Args&& ...args) // c++11부터 등장한 문법 : 베네딕 템플릿문법
 {
 	//Type* memory = static_cast<Type*>(BaseAllocator::Alloc(sizeof(Type)));
 
-	Type* memory = static_cast<Type*>(xxalloc(sizeof(Type)));
+	Type* memory = static_cast<Type*>(PoolAllocator::Alloc(sizeof(Type)));
 
 	//placement new 
 	// 이미 메모리는 있으니까 메모리위에다 생성자를 호출해달라는 문법
@@ -58,5 +58,12 @@ void xdelete(Type* obj)
 {
 	obj->~Type();
 	//BaseAllocator::Release(obj);
-	xxrelease(obj);
+	PoolAllocator::Release(obj);
+}
+
+
+template<typename Type>
+shared_ptr<Type> MakeShared()
+{
+	return shared_ptr<Type>(xnew<Type>(), xdelete<Type>);
 }

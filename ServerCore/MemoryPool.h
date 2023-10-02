@@ -64,7 +64,7 @@ public:
 private:
 	SLIST_HEADER _header;	// 첫번째 데이터를 가르킨다.
 	int32 _allocSize = 0;
-	atomic<int32> _allocCount = 0;
-
+	atomic<int32> _useCount = 0;
+	atomic<int32> _reserveCount = 0;
 };
 

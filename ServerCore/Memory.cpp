@@ -64,19 +64,25 @@ void* Memory::Allocate(int32 size)
 	// 공용데이터를 Write하지않기 떄문에 락을 걸지않는다.
 	// 어차피 Push, Pop에서 락을해서 동기화를 진행하기도한다.
 	MemoryHeader* header = nullptr;
-
 	const int32 allocSize = size + sizeof(MemoryHeader);
+
+#ifdef _STOMP
+	header = reinterpret_cast<MemoryHeader*>(StompAllocator::Alloc(allocSize));
+#else
 
 	if (allocSize > MAX_ALLOC_SIZE)
 	{
 		// 메모리 풀링의 최대 크기를 벗어나면 일반 할당
-		header = reinterpret_cast<MemoryHeader*>(::_aligned_malloc(allocSize,SLIST_ALIGNMENT));
+		header = reinterpret_cast<MemoryHeader*>(::_aligned_malloc(allocSize, SLIST_ALIGNMENT));
 	}
 	else
 	{
 		// 메모리 풀에서 꺼내온다.
 		header = _poolTable[allocSize]->Pop();
 	}
+#endif
+
+
 	//몇바이트를 할당했는지 정보
     return MemoryHeader::AttachHeader(header,allocSize);
 }
@@ -88,6 +94,9 @@ void Memory::Relase(void* ptr)
 	const int32 allocSize = header->allocSize;
 	ASSERT_CRASH(allocSize > 0);
 
+#ifdef _STOMP
+	StompAllocator::Release(header);
+#else
 	if (allocSize > MAX_ALLOC_SIZE)
 	{
 		// 큰 크기는 일반할당 하니까 일반해제 한다.
@@ -98,5 +107,8 @@ void Memory::Relase(void* ptr)
 		//메모리풀에 반납
 		_poolTable[allocSize]->Push(header);
 	}
+
+#endif
+
 
 }

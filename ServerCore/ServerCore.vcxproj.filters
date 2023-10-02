@@ -43,6 +43,7 @@
     <ClInclude Include="MemoryPool.h">
       <Filter>Memory</Filter>
     </ClInclude>
+    <ClInclude Include="ObjectPool.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CorePch.cpp">
@@ -78,6 +79,7 @@
     <ClCompile Include="MemoryPool.cpp">
       <Filter>Memory</Filter>
     </ClCompile>
+    <ClCompile Include="ObjectPool.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Utills">
