@@ -255,7 +255,38 @@ int main()
 		::inet_ntop(AF_INET, &clientAddr.sin_addr, ipAddress, sizeof(ipAddress));
 		cout << "Client Connected! IP = " << ipAddress << endl;
 
+
 		// TODO
+		while (true)
+		{
+			char recvBuffer[1000];
+
+			this_thread::sleep_for(1s);
+
+			// 단순히 데이터를 받는 함수 그래서 listenSocket이 아닌 클라이언트소켓이다.
+			int32 recvLen = ::recv(clientSocket, recvBuffer, sizeof(recvBuffer), 0);
+
+			if (recvLen <= 0)
+			{
+				int32 errCode = ::WSAGetLastError();
+				cout << "Accept ErrorCode : " << errCode << endl;
+				return 0;
+			}
+
+			cout << "Recv Data :  Data : " << recvBuffer << endl;
+			cout << "Recv Data :  Len : " << recvLen << endl;
+
+
+			/*int32 reslutCode = ::send(clientSocket, recvBuffer, sizeof(recvBuffer), 0);
+			if (reslutCode == SOCKET_ERROR)
+			{
+				int32 errCode = ::WSAGetLastError();
+				cout << "Sokcet ErrCode : " << errCode << endl;
+				return 0;
+			}*/
+
+		}
+
 	}
 
 	// -----------------------------
