@@ -197,6 +197,18 @@ void HandleError(const char* cause)
 	cout << "Socket ErrorCode : " << errCode << endl;
 }
 
+const int32 BUFSIZE = 1000;
+
+struct Session
+{
+	SOCKET socket;
+	char recvBuffer[BUFSIZE] = {};
+	int32 recvBytes = 0;
+	int32 sendBytes = 0;
+};
+
+
+
 // TCP
 //int main()
 //{
@@ -379,6 +391,9 @@ void HandleError(const char* cause)
 //}
 
 
+
+
+
 int main()
 {
 	WSAData wsaData;
@@ -397,6 +412,7 @@ int main()
 	SOCKET listenSocket = ::socket(AF_INET, SOCK_STREAM, 0);
 	if (listenSocket == INVALID_SOCKET)
 	{
+		HandleError("Socket");
 		return 0;
 	}
 
@@ -424,69 +440,124 @@ int main()
 
 	cout <<"Accept" <<endl;
 
-	SOCKADDR_IN clientAddr;
-	int32 addLen = sizeof(clientAddr);
+	// Select 모델 = select 함수가 핵심이 되는
+	// 소켓 함수 호출이 성공할 시점을 미리 알 수 있다.
+	// 문제 상황)
+	// 수신버퍼에 데이터가 없는데, read 한다거나!
+	// 송신버퍼가 꽉 찼는데, write 한다거나!
+	// - 블로킹 소켓 : 조건이 만족되지 않아서 블로킹되는 상황 예방
+	// - 논블로킹 소켓 : 조건이 만족되지 않아서 불필요하게 반복 체크하는 상황을 예방
 
-	// Accept
+	// socket set
+	// 1) 읽기[1 2 3] 쓰기[] 예외[] 관찰 대상 등록
+	// OutofBand는 send() 마지막인자를 경우에 따라서 MSG_OOB로 보내는 특별한 데이터이다.
+	// 받는 쪽에서도 recv OOB 세팅을 해야 읽을 수 있다.
+	// 2) select(readSet, writeSet, exceptSet); -> 관찰 시작
+	// 3) 즉 적어도 하나의 소켓이 준비되면 리턴 -> 낙오자는 알아서 제거됨
+	// 4) 남은 소켓 체크해서 진행
+
+	// fd_set read :
+	// FD_ZERO : 비운다.
+	// ex) FD_ZERO(set)
+	// FD_TEST 소켓 s를 넣는다.
+	// ex) FD_SET(s,&set);
+	// FD_CLR : 소켓 s를 제거
+	// ex)  FD_CLR(s,&set);
+	// FD_ISSET :소켓 s 가 set에 들어있으면 0이 아닌 값을 리턴한다.
+	
+	vector<Session> sessions;
+	sessions.reserve(100);
+
+	// 장점: 무작정 accept , recv ,send를 호출하는것이아니라 
+	// 호출된 준비가 되어있다는것을 확인하고 안전하게 recv, send를 한다는 것이다.
+	// 블로킹,논블로킹 상관없이 사용할 수 있다. 2) 간단하다.
+	// 단점 : fd_set에 있는 배열이 숫자가 작아 동접자 수가 fd_set을 많이 선언해야한다.
+
+
+	fd_set reads;
+	fd_set writes;
+
 	while (true)
 	{
-		SOCKET clientSocket = ::accept(listenSocket, (SOCKADDR*)&clientAddr, &addLen);
-		if (clientSocket == INVALID_SOCKET)
-		{
-			// 원래 블록 했어야 했는데 논블로킹으로 만들었잖아.
-			if (::WSAGetLastError() == WSAEWOULDBLOCK)
-				continue;
 
-			// ERROR
-			break;
+		// 매번마다 다시밀고 다시 등록한다.
+		// select는 낙오자를 제거하기 때문이다.
+		// 소켓 셋 초기화
+		FD_ZERO(&reads);
+		FD_ZERO(&writes);
+
+		//ListenSocket 등록
+		FD_SET(listenSocket, &reads);
+
+		for (Session& s : sessions)
+		{
+			if (s.recvBytes <= s.sendBytes)
+				FD_SET(s.socket, &reads);
+			else
+				FD_SET(s.socket, &writes);
 		}
 
-		cout << "Client Connected " << endl;
-	
-		
-	
-		//Recv
-		while (true)
+		// [옵션] : 마지막 timeout 인자 설정 가능
+		/*timeval timeOut;
+		timeOut.tv_sec;
+		timeOut.tv_usec*/
+		int32 retVal = ::select(0, &reads, &writes, nullptr, nullptr);
+		if (retVal == SOCKET_ERROR)
+			break;
+
+		// Listener 소켓 체크
+		if (FD_ISSET(listenSocket, &reads))
 		{
-			char recvBuffer[1000];
-			int32 recvLen = ::recv(clientSocket, recvBuffer, sizeof(recvBuffer), 0);
+			SOCKADDR_IN clientAddr;
+			int32 addrLen = sizeof(clientAddr);
+			SOCKET clientSocket = ::accept(listenSocket, (SOCKADDR*)&clientAddr, &addrLen);
 
-			if (recvLen == SOCKET_ERROR)
+			if (clientSocket != INVALID_SOCKET)
 			{
-				// 원래 블록 했어야 했는데 논블로킹으로 만들었잖아.
-				if (::WSAGetLastError() == WSAEWOULDBLOCK)
-					continue;
-
-				// ERROR
-				break;
+				cout << "client Connect " << endl;
+				sessions.push_back(Session{clientSocket});
 			}
-			else if (recvLen == 0)
+		}
+
+		// 나머지 소켓 체크
+		for (Session& s : sessions)
+		{
+			// Read 체크
+			if (FD_ISSET(s.socket, &reads))
 			{
-
-				// 연결끊김
-				break;
-			}
-		
-
-			cout << "Recv Data Len" << recvLen << endl;
-
-			// Send
-			while (true)
-			{
-				if (::send(clientSocket, recvBuffer, recvLen, 0) == SOCKET_ERROR)
+				int32 recvLen = ::recv(s.socket, s.recvBuffer, BUFSIZE, 0);
+				if (recvLen <= 0)
 				{
-					// 원래 블록 했어야 했는데 논블로킹으로 만들었잖아.
-					if (::WSAGetLastError() == WSAEWOULDBLOCK)
-						continue;
-
-					break;
+					//Todo :sessions 에서 제거
+					continue;
 				}
 
-				cout << "Send Data ! Lend " << recvLen << endl;
-				break;
+				s.recvBytes = recvLen;
+			}
+
+
+			// Write 체크
+			if (FD_ISSET(s.socket, &writes))
+			{
+				// 블로킹 모드 -> 모든 데이터를 다 보낸다.
+				// 논블로킹 모드 -> 상대방 수신 버퍼상황에 따라서 일부만 보낼 수 있다.
+				int32 sendLen = ::send(s.socket, &s.recvBuffer[s.sendBytes], s.recvBytes - s.sendBytes, 0);
+
+				if (sendLen == SOCKET_ERROR)
+				{
+					// Todo  Session 제거
+					continue;
+				}
+
+				s.sendBytes += sendLen;
+				if (s.recvBytes == s.sendBytes)
+				{
+					s.recvBytes = 0;
+					s.sendBytes = 0;
+				}
+
 			}
 		}
-	
 	}
 
 
