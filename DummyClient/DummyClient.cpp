@@ -236,6 +236,8 @@ void HandleError(const char* cause)
 
 int main()
 {
+	this_thread::sleep_for(1s);
+
 	// 윈속 초기화 (ws2_32 라이브러리 초기화)
 	// 관련 정보가 wsaData에 채워짐
 	WSAData wsaData;
