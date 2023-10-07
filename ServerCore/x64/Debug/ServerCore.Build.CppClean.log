@@ -1,1 +1,17 @@
 c:\users\cokou\source\repos\serverpartice\servercore\x64\debug\servercore.pch
+c:\users\cokou\source\repos\serverpartice\libaries\debug\servercore.pdb
+c:\users\cokou\source\repos\serverpartice\libaries\debug\servercore.idb
+c:\users\cokou\source\repos\serverpartice\servercore\x64\debug\pch.obj
+c:\users\cokou\source\repos\serverpartice\servercore\x64\debug\typecast.obj
+c:\users\cokou\source\repos\serverpartice\servercore\x64\debug\threadmanager.obj
+c:\users\cokou\source\repos\serverpartice\servercore\x64\debug\refcounting.obj
+c:\users\cokou\source\repos\serverpartice\servercore\x64\debug\objectpool.obj
+c:\users\cokou\source\repos\serverpartice\servercore\x64\debug\memorypool.obj
+c:\users\cokou\source\repos\serverpartice\servercore\x64\debug\memory.obj
+c:\users\cokou\source\repos\serverpartice\servercore\x64\debug\lock.obj
+c:\users\cokou\source\repos\serverpartice\servercore\x64\debug\deadlockprofiler.obj
+c:\users\cokou\source\repos\serverpartice\servercore\x64\debug\coretls.obj
+c:\users\cokou\source\repos\serverpartice\servercore\x64\debug\corepch.obj
+c:\users\cokou\source\repos\serverpartice\servercore\x64\debug\servercore.tlog\cl.command.1.tlog
+c:\users\cokou\source\repos\serverpartice\servercore\x64\debug\servercore.tlog\cl.read.1.tlog
+c:\users\cokou\source\repos\serverpartice\servercore\x64\debug\servercore.tlog\cl.write.1.tlog
