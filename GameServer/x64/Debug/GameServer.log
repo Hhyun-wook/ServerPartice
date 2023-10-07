@@ -1,2 +1,1 @@
-﻿  GameServer.cpp
-  GameServer.vcxproj -> C:\Users\cokou\source\repos\ServerPartice\Binary\Debug\GameServer.exe
+﻿LINK : fatal error LNK1104: 'C:\Users\cokou\source\repos\ServerPartice\Binary\Debug\GameServer.exe' 파일을 열 수 없습니다.
