@@ -24,7 +24,7 @@ template <typename Key, typename Value, typename Pred = less<Key>>
 using xMap = map<Key, Value, Pred, StlAllocator<pair<const Key, Value>>>;
 
 template <typename Key,  typename Pred = less<Key>>
-using xSet = map<Key, Pred, StlAllocator<const Key>>;
+using xSet = set<Key, Pred, StlAllocator<const Key>>;
 
 template <typename Type>
 using xDeque = deque<Type, StlAllocator<Type>>;

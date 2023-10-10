@@ -3,7 +3,7 @@
 #include "IocpEvent.h"
 #include "NetAddress.h"
 
-class Session
+class Session :public IocpObject
 {
 public:
 	Session();

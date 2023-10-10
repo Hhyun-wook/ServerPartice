@@ -13,23 +13,23 @@ IocpCore::~IocpCore()
     ::CloseHandle(_iocpHandle);
 }
 
-bool IocpCore::Register(IocpObject* iocpObject)
+bool IocpCore::Register(IocpObjectRef iocpObject)
 {
-    SOCKET socket;
     return ::CreateIoCompletionPort(iocpObject->GetHandle(),_iocpHandle,
-        /*key */reinterpret_cast<ULONG_PTR>(iocpObject),0);
+        /*key */0 ,0);
     
 }
 
 bool IocpCore::DisPatch(uint32 timeoutMs)
 {
     DWORD numofBytes = 0;
-    IocpObject* iocpObject = nullptr;
+    ULONG_PTR key = 0;
     IocpEvent* iocpEvent = nullptr;
     
-    if (::GetQueuedCompletionStatus(_iocpHandle, OUT & numofBytes, OUT reinterpret_cast<PULONG_PTR>(&iocpObject),
+    if (::GetQueuedCompletionStatus(_iocpHandle, OUT & numofBytes, OUT &key,
         OUT reinterpret_cast<LPOVERLAPPED*>(&iocpEvent), timeoutMs))
     {
+        IocpObjectRef iocpObject = iocpEvent->owner;
         iocpObject->Dispatch(iocpEvent, numofBytes);
     }
     else
@@ -41,6 +41,7 @@ bool IocpCore::DisPatch(uint32 timeoutMs)
         case WAIT_TIMEOUT:
             return false;
         default:
+            IocpObjectRef iocpObject = iocpEvent->owner;
             iocpObject->Dispatch(iocpEvent, numofBytes);
             break;
         }

@@ -21,10 +21,11 @@ public:
 	IocpEvent(EventType type);
 
 	void	Init();
-	EventType GetType() { return _type; }
+	EventType GetType() { return _eventtype; }
 
-protected:
-	EventType _type;
+public:
+	EventType _eventtype;
+	IocpObjectRef owner;
 };
 
 /*
@@ -46,11 +47,9 @@ class AcceptEvent :public IocpEvent
 public:
 	AcceptEvent() : IocpEvent(EventType::Accept) {}
 
-	void SetSession(Session* session) { _session = session; }
-	Session* GetSession() { return _session; }
-
-private:
-	Session* _session = nullptr;
+	
+public:
+	SessionRef  _session = nullptr;
 };
 
 

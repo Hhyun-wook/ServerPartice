@@ -4,8 +4,9 @@
 	IOCP_Object
 */
 
-class IocpObject
+class IocpObject  : public enable_shared_from_this<IocpObject> //Áß¿ä
 {
+
 public:
 	virtual HANDLE GetHandle() abstract;
 	virtual void Dispatch(class IocpEvent* iocpEvent, int32 numofBytes = 0)abstract;
@@ -24,7 +25,7 @@ public:
 
 	HANDLE GetHandle() { return _iocpHandle; }
 
-	bool Register(class IocpObject* iocpObject);
+	bool Register(IocpObjectRef iocpObject);
 	bool DisPatch(uint32 timeoutMs = INFINITE);
 
 
@@ -33,4 +34,3 @@ private:
 
 };
 
-extern IocpCore GlocpCore;

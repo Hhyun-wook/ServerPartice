@@ -64,7 +64,12 @@
     <ClInclude Include="Listener.h">
       <Filter>network</Filter>
     </ClInclude>
-    <ClInclude Include="Session.h" />
+    <ClInclude Include="Service.h">
+      <Filter>network</Filter>
+    </ClInclude>
+    <ClInclude Include="Session.h">
+      <Filter>network</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CorePch.cpp">
@@ -121,7 +126,12 @@
     <ClCompile Include="Listener.cpp">
       <Filter>network</Filter>
     </ClCompile>
-    <ClCompile Include="Session.cpp" />
+    <ClCompile Include="Service.cpp">
+      <Filter>network</Filter>
+    </ClCompile>
+    <ClCompile Include="Session.cpp">
+      <Filter>network</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Utills">
