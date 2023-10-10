@@ -1,17 +1,8 @@
 ﻿#include "pch.h"
 #include <iostream>
-
-#include <winsock2.h>
-#include <mswsock.h>
-#include <ws2tcpip.h>
-#pragma comment(lib, "ws2_32.lib") // 서버를 사용할려면 필요하다.
-
-
-void HandleError(const char* cause)
-{
-	int32 errCode = ::WSAGetLastError();
-	cout << "Socket ErrorCode : " << errCode << endl;
-}
+#include "Service.h"
+#include "Session.h"
+#include "ThreadManager.h"
 
 
 // TCP
@@ -233,101 +224,71 @@ void HandleError(const char* cause)
 //
 //}
 
+char SendBuffer[] = "Hello World";
+
+class ServerSession : public Session
+{
+public:
+
+	~ServerSession()
+	{
+		cout << "~ServerSession()" << endl;
+	}
+
+	virtual void OnConnected() override
+	{
+		cout << "Connected To Server " << endl;
+		Send((BYTE*)SendBuffer, sizeof(SendBuffer));
+	}
+
+	virtual int32 OnRecv(BYTE* buffer, int32 len) override
+	{
+		//Echo
+		cout << "OnRecv Len = " << len << endl;
+
+		this_thread::sleep_for(1s);
+
+		Send((BYTE*)SendBuffer, sizeof(SendBuffer));
+		return len;
+	}
+
+	virtual void OnSend(int32 len) override
+	{
+		cout << "OnSend Len = " << len << endl;
+	}
+
+	virtual void OnDisconnected()override
+	{
+		cout << "DisConnected " << endl;
+	}
+
+};
+
 
 int main()
 {
+
 	//this_thread::sleep_for(1s);
 
-	// 윈속 초기화 (ws2_32 라이브러리 초기화)
-	// 관련 정보가 wsaData에 채워짐
-	WSAData wsaData;
-	if (::WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
-		return 0;
+	ClientServiceRef service = MakeShared<ClientService>(
+		NetAddress(L"127.0.0.1", 7777),
+		MakeShared<IocpCore>(),
+		MakeShared<ServerSession>,
+		1);
 
-	SOCKET clientSocket = ::socket(AF_INET, SOCK_STREAM, 0);
-	if (clientSocket == INVALID_SOCKET)
+	ASSERT_CRASH(service->Start());
+
+	for (int32 i = 0; i < 5; ++i)
 	{
-		HandleError("Socket");
-		return 0;
-	}
-
-
-	u_long on = 1;
-	if (::ioctlsocket(clientSocket, FIONBIO, &on) == INVALID_SOCKET)
-	{
-		return 0;
-	}
-
-	SOCKADDR_IN serverAddr;
-	memset(&serverAddr, 0, sizeof(serverAddr));
-	serverAddr.sin_family = AF_INET;
-	::inet_pton(AF_INET, "127.0.0.1", &serverAddr.sin_addr);
-	serverAddr.sin_port = htons(7777);
-
-	//Connect
-	while (true)
-	{
-		if (::connect(clientSocket, (SOCKADDR*)&serverAddr, sizeof(serverAddr)) == SOCKET_ERROR)
-		{
-			// 원래 블록 했어야 했는데 논블로킹으로 만들었잖아.
-			if (::WSAGetLastError() == WSAEWOULDBLOCK)
-				continue;
-			// 이미 연결된 상태라면 break;
-			if (::WSAGetLastError() == WSAEISCONN)
-				break;
-
-			//ERROR
-			break;
-		}
-	}
-
-	cout << "Client Connected " << endl;
-
-	char sendBuffer[100] = "Hello Server!";
-	WSAEVENT wsaEvent = WSACreateEvent();
-	WSAOVERLAPPED overlapped = {};
-	overlapped.hEvent = wsaEvent;
-	// Send
-	while (true)
-	{
-		WSABUF wsaBuf;
-		wsaBuf.buf = sendBuffer;
-		wsaBuf.len = 100;
-
-		DWORD sendLen = 0;
-		DWORD flags = 0;
-
-		if (::WSASend(clientSocket, &wsaBuf, 1, &sendLen, flags, &overlapped, nullptr) == SOCKET_ERROR)
-		{
-			if (::WSAGetLastError() == WSA_IO_PENDING)
+		GThreadManager->Launch([=]()
 			{
-				//Pending
-					//Pending 상태
-				::WSAWaitForMultipleEvents(1, &wsaEvent, TRUE, WSA_INFINITE, FALSE);
-				::WSAGetOverlappedResult(clientSocket, &overlapped, &sendLen, FALSE, &flags);
+				while (true)
+				{
+					service->GetIocpCore()->DisPatch();
+				}
 
-			}
-			else
-			{
-				// 진짜 문제 있음
-				break;
-			}
-		}
-
-	
-		cout << "Send Data ! Len " << sizeof(sendBuffer) << endl;
-
-		this_thread::sleep_for(1s);
+			});
 	}
 
-
-
-
-
-	::closesocket(clientSocket);
-
-	// 윈속 종료
-	::WSACleanup();
-
-
+	GThreadManager->Join();
 }
