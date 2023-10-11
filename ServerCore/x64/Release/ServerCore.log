@@ -1,8 +1,0 @@
-﻿  pch.cpp
-  CoreGlobal.cpp
-  CorePch.cpp
-  CoreTLS.cpp
-  DeadlockProfiler.cpp
-  Lock.cpp
-  ThreadManager.cpp
-  ServerCore.vcxproj -> C:\Users\cokou\source\repos\ServerPartice\Libaries\Release\ServerCore.lib

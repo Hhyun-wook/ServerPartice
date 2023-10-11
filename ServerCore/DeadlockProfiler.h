@@ -1,15 +1,13 @@
 #pragma once
-
 #include <stack>
 #include <map>
 #include <vector>
 
-/*
-	DeadlockProFiler
-*/
+/*--------------------
+	DeadLockProfiler
+---------------------*/
 
-// 그래프 알고리즘 적용
-class DeadlockProfiler
+class DeadLockProfiler
 {
 public:
 	void PushLock(const char* name);
@@ -17,21 +15,19 @@ public:
 	void CheckCycle();
 
 private:
-	void Dfs(int32 here);
+	void Dfs(int32 index);
 
 private:
-	unordered_map<const char*, int32> _nameToId;
-	unordered_map<int32,const char*> _idToName;
-
-	map<int32, set<int32>>			_lockHistory; // 간선에 대한 정보
+	unordered_map<const char*, int32>	_nameToId;
+	unordered_map<int32, const char*>	_idToName;
+	map<int32, set<int32>>				_lockHistory;
 
 	Mutex _lock;
 
 private:
-	vector<int32>					_discoveredOrder; // 노드가 발견된 순서를 기록하는 배열
-	int32 _discoveredCount = 0;		//노드가 발견된 순서
-	vector<bool> _finished; //dfs[i]가 종료되었는지여부
-	vector<int32> _parent;
-
+	vector<int32>	_discoveredOrder; // 노드가 발견된 순서를 기록하는 배열
+	int32			_discoveredCount = 0; // 노드가 발견된 순서
+	vector<bool>	_finished; // Dfs(i)가 종료 되었는지 여부
+	vector<int32>	_parent;
 };
 

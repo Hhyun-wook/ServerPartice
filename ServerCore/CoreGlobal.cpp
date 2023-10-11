@@ -1,15 +1,17 @@
 #include "pch.h"
 #include "CoreGlobal.h"
 #include "ThreadManager.h"
-#include "DeadlockProfiler.h"
 #include "Memory.h"
+#include "DeadLockProfiler.h"
 #include "SocketUtils.h"
 #include "SendBuffer.h"
 
-ThreadManager* GThreadManager = nullptr;
-DeadlockProfiler* GDeadLockProfiler = nullptr;
-Memory* GMemory = nullptr;
-SendBufferManager* GSendBufferManager = nullptr;
+ThreadManager*		GThreadManager = nullptr;
+Memory*				GMemory = nullptr;
+SendBufferManager*	GSendBufferManager = nullptr;
+
+DeadLockProfiler*	GDeadLockProfiler = nullptr;
+
 class CoreGlobal
 {
 public:
@@ -17,22 +19,17 @@ public:
 	{
 		GThreadManager = new ThreadManager();
 		GMemory = new Memory();
-		GDeadLockProfiler = new DeadlockProfiler();
 		GSendBufferManager = new SendBufferManager();
+		GDeadLockProfiler = new DeadLockProfiler();
 		SocketUtils::Init();
-	
 	}
 
 	~CoreGlobal()
 	{
 		delete GThreadManager;
 		delete GMemory;
-		delete GDeadLockProfiler;
 		delete GSendBufferManager;
+		delete GDeadLockProfiler;
 		SocketUtils::Clear();
 	}
-
-}GCoreGlobal;
-
-
-
+} GCoreGlobal;

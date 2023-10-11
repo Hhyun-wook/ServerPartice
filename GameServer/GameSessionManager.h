@@ -1,6 +1,5 @@
 #pragma once
 
-
 class GameSession;
 
 using GameSessionRef = shared_ptr<GameSession>;
@@ -12,12 +11,9 @@ public:
 	void Remove(GameSessionRef session);
 	void Broadcast(SendBufferRef sendBuffer);
 
-
-
 private:
 	USE_LOCK;
-	xSet<GameSessionRef> _sessions;
-
+	Set<GameSessionRef> _sessions;
 };
 
 extern GameSessionManager GSessionManager;

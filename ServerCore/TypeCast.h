@@ -1,8 +1,8 @@
 #pragma once
+#include "Types.h"
 
 #pragma region TypeList
-
-template<typename ...T>
+template<typename... T>
 struct TypeList;
 
 template<typename T, typename U>
@@ -12,20 +12,15 @@ struct TypeList<T, U>
 	using Tail = U;
 };
 
-template <typename T, typename ...U>
+template<typename T, typename... U>
 struct TypeList<T, U...>
 {
 	using Head = T;
 	using Tail = TypeList<U...>;
 };
-
 #pragma endregion
 
-
 #pragma region Length
-
-// 컴파일시점에 적용된다
-
 template<typename T>
 struct Length;
 
@@ -35,69 +30,59 @@ struct Length<TypeList<>>
 	enum { value = 0 };
 };
 
-template<typename T, typename ...U>
+template<typename T, typename... U>
 struct Length<TypeList<T, U...>>
 {
-	enum {value = 1 + Length<TypeList<U...>>::value };
+	enum { value = 1 + Length<TypeList<U...>>::value };
 };
-
-
 #pragma endregion
 
 #pragma region TypeAt
-
-// 인덱스가 어떤 클래스인지 반환
-
-template<typename TL,int32 index>
+template<typename TL, int32 index>
 struct TypeAt;
 
-template<typename Head,typename ...Tail>
+template<typename Head, typename... Tail>
 struct TypeAt<TypeList<Head, Tail...>, 0>
 {
 	using Result = Head;
 };
 
-template<typename Head, typename ...Tail,int32 index>
+template<typename Head, typename... Tail, int32 index>
 struct TypeAt<TypeList<Head, Tail...>, index>
 {
 	using Result = typename TypeAt<TypeList<Tail...>, index - 1>::Result;
 };
-
 #pragma endregion
 
+#pragma  region IndexOf
+template<typename TL, typename T>
+struct IndexOf;
 
-#pragma region Index0f
-
-// 클래스를 던져주면 몇번째 인덱스에 해당하는건지 반환
-
-template<typename TL,typename T>
-struct index0f;
-
-template<typename ...Tail,typename T>
-struct index0f<TypeList<T, Tail...>, T>
+template<typename... Tail, typename T>
+struct IndexOf<TypeList<T, Tail...>, T>
 {
-	enum {value =0 };
+	enum { value = 0 };
 };
 
 template<typename T>
-struct index0f<TypeList<>, T>
+struct IndexOf<TypeList<>, T>
 {
-	enum { valie = -1 };
+	enum { value = -1 };
 };
 
-template<typename Head,typename ...Tail, typename T>
-struct index0f<TypeList<Head, Tail...>, T>
+template<typename Head, typename... Tail, typename T>
+struct IndexOf<TypeList<Head, Tail...>, T>
 {
-	enum {temp = index0f<TypeList<Tail...>,T>::value};
-	enum {value = (temp==-1) ? -1 :temp +1 };
+private:
+	enum { temp = IndexOf<TypeList<Tail...>, T>::value };
+
+public:
+	enum { value = (temp == -1) ? -1 : temp + 1 };
 };
-
-
 #pragma endregion
 
-
 #pragma region Conversion
-template<typename From,typename To>
+template<typename From, typename To>
 class Conversion
 {
 private:
@@ -111,39 +96,34 @@ private:
 public:
 	enum
 	{
-		exists =sizeof(Test(MakeFrom()))== sizeof(Small) 
+		exists = sizeof(Test(MakeFrom())) == sizeof(Small)
 	};
 };
-
-
-
 #pragma endregion
-
 
 #pragma region TypeCast
 
 template<int32 v>
 struct Int2Type
 {
-	enum {value =v};
+	enum { value = v };
 };
-
 
 template<typename TL>
 class TypeConversion
 {
+public:
 	enum
 	{
 		length = Length<TL>::value
 	};
 
-public:
 	TypeConversion()
 	{
 		MakeTable(Int2Type<0>(), Int2Type<0>());
 	}
 
-	template <int32 i, int32 j>
+	template<int32 i, int32 j>
 	static void MakeTable(Int2Type<i>, Int2Type<j>)
 	{
 		using FromType = typename TypeAt<TL, i>::Result;
@@ -163,10 +143,9 @@ public:
 		MakeTable(Int2Type<i + 1>(), Int2Type<0>());
 	}
 
-	template <int j>
+	template<int j>
 	static void MakeTable(Int2Type<length>, Int2Type<j>)
 	{
-
 	}
 
 	static inline bool CanConvert(int32 from, int32 to)
@@ -175,14 +154,12 @@ public:
 		return s_convert[from][to];
 	}
 
-
 public:
 	static bool s_convert[length][length];
 };
 
 template<typename TL>
 bool TypeConversion<TL>::s_convert[length][length];
-
 
 template<typename To, typename From>
 To TypeCast(From* ptr)
@@ -192,11 +169,12 @@ To TypeCast(From* ptr)
 
 	using TL = typename From::TL;
 
-	if (TypeConversion<TL>::CanConvert(ptr->_typeid, index0f<TL, remove_pointer_t<To>>::value))
+	if (TypeConversion<TL>::CanConvert(ptr->_typeId, IndexOf<TL, remove_pointer_t<To>>::value))
 		return static_cast<To>(ptr);
 
 	return nullptr;
 }
+
 
 template<typename To, typename From>
 shared_ptr<To> TypeCast(shared_ptr<From> ptr)
@@ -206,13 +184,12 @@ shared_ptr<To> TypeCast(shared_ptr<From> ptr)
 
 	using TL = typename From::TL;
 
-	if (TypeConversion<TL>::CanConvert(ptr->_typeid, index0f<TL, remove_pointer_t<To>>::value))
+	if (TypeConversion<TL>::CanConvert(ptr->_typeId, IndexOf<TL, remove_pointer_t<To>>::value))
 		return static_pointer_cast<To>(ptr);
 
 	return nullptr;
 }
 
-//
 template<typename To, typename From>
 bool CanCast(From* ptr)
 {
@@ -220,9 +197,9 @@ bool CanCast(From* ptr)
 		return false;
 
 	using TL = typename From::TL;
-
-	return TypeConversion<TL>::CanConvert(ptr->_typeid, index0f<TL, remove_pointer_t<To>>::value);
+	return TypeConversion<TL>::CanConvert(ptr->_typeId, IndexOf<TL, remove_pointer_t<To>>::value);
 }
+
 
 template<typename To, typename From>
 bool CanCast(shared_ptr<From> ptr)
@@ -231,15 +208,10 @@ bool CanCast(shared_ptr<From> ptr)
 		return false;
 
 	using TL = typename From::TL;
-
-	return TypeConversion<TL>::CanConvert(ptr->_typeid, index0f<TL, remove_pointer_t<To>>::value);
+	return TypeConversion<TL>::CanConvert(ptr->_typeId, IndexOf<TL, remove_pointer_t<To>>::value);
 }
-
-
-
 
 #pragma endregion
 
-
-#define DECLEAR_TL using TL = TL; int32 _typeid;
-#define INIT_TL(Type)  _typeid = index0f<TL,Type>::value;
+#define DECLARE_TL		using TL = TL; int32 _typeId;
+#define INIT_TL(Type)	_typeId = IndexOf<TL, Type>::value;
