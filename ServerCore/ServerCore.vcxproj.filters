@@ -70,7 +70,10 @@
     <ClInclude Include="Session.h">
       <Filter>network</Filter>
     </ClInclude>
-    <ClInclude Include="RecvBuffer.h" />
+    <ClInclude Include="RecvBuffer.h">
+      <Filter>network</Filter>
+    </ClInclude>
+    <ClInclude Include="SendBuffer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CorePch.cpp">
@@ -133,7 +136,10 @@
     <ClCompile Include="Session.cpp">
       <Filter>network</Filter>
     </ClCompile>
-    <ClCompile Include="RecvBuffer.cpp" />
+    <ClCompile Include="RecvBuffer.cpp">
+      <Filter>network</Filter>
+    </ClCompile>
+    <ClCompile Include="SendBuffer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Utills">
