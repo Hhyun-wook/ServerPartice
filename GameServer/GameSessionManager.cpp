@@ -21,6 +21,7 @@ void GameSessionManager::Broadcast(SendBufferRef sendBuffer)
 	for (GameSessionRef session : _sessions)
 	{
 		session->Send(sendBuffer);
+		
 	}
 
 }

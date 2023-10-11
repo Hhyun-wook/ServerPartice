@@ -34,21 +34,30 @@ Session::~Session()
 
 void Session::Send(SendBufferRef sendBuffer)
 {
-	// 현재 RegisterSend 가 걸리지 않은 상태라면 걸어준다.
-	WRITE_LOCK;
-	
-	_sendQueue.push(sendBuffer);
+	if (IsConnected() == false)
+		return;
 
-	//CAS 사용 Atomic 이라서
-	//if (_sendRegistered == false)
-	//{
-	//	//	_sendRegistered = true; 
-	//	RegisterSend();
-	//}
+	bool registerSend = false;
 
-	if (_sendRegistered.exchange(true)== false)
+	{
+		// 현재 RegisterSend 가 걸리지 않은 상태라면 걸어준다.
+		WRITE_LOCK;
+
+		_sendQueue.push(sendBuffer);
+
+		//CAS 사용 Atomic 이라서
+		//if (_sendRegistered == false)
+		//{
+		//	//	_sendRegistered = true; 
+		//	RegisterSend();
+		//}
+
+		if (_sendRegistered.exchange(true) == false)
+			registerSend=true;
+	}
+
+	if(registerSend)
 		RegisterSend();
-	
 
 }
 
@@ -67,9 +76,7 @@ void Session::Disconnect(const WCHAR* cause)
 	//Temp
 	wcout << "DisConnect : " << cause << endl;
 
-	OnDisconnected(); //컨텐츠 코드에서 오버라이딩
-	
-	GetService()->ReleaseSession(GetSessionRef());
+
 
 	RegisterDisConnect();
 }
@@ -219,8 +226,6 @@ void Session::RegisterSend()
 		wsaBufs.push_back(wsaBuf);
 	}
 
-
-
 	DWORD numOfBytes = 0;
 	if (SOCKET_ERROR == ::WSASend(_socket, wsaBufs.data(), static_cast<DWORD>(wsaBufs.size()), OUT &numOfBytes, 0, &_sendEvent, nullptr))
 	{
@@ -256,6 +261,8 @@ void Session::ProcessDisConnect()
 {
 	_disConnectEvent.owner = nullptr; //Relase_ref
 
+	OnDisconnected(); //컨텐츠 코드에서 오버라이딩
+	GetService()->ReleaseSession(GetSessionRef());
 }
 
 void Session::ProcessRecv(int32 numOfBytes)
@@ -335,4 +342,42 @@ void Session::HandleError(int32 errorCode)
 
 	}
 
+}
+
+/*
+	PacketSession
+*/
+
+PacketSession::PacketSession()
+{
+}
+
+PacketSession::~PacketSession()
+{
+}
+
+// [size(2)][id(2)][data...] [size(2)][id(2)][data...]
+int32 PacketSession::OnRecv(BYTE* buffer, int32 len)
+{
+	int32 processLen = 0;
+	while (true)
+	{
+		int32 dataSize = len - processLen;
+		// 최소한 헤더는 파싱할 수 있어야 한다.
+		if (dataSize < sizeof(PacketHeader))
+			break;
+
+		PacketHeader header = *(reinterpret_cast<PacketHeader*>(&buffer[processLen]));
+		// 헤더에 기록된 패킷 크기를 파싱할 수 있어야 한다.
+		if (dataSize < header.size)
+			break;
+		
+		// 패킷 조립 성공
+		OnRecvPacket(&buffer[processLen], header.size);
+
+		processLen += header.size;
+	}
+
+
+	return processLen;
 }

@@ -181,7 +181,7 @@
 #include "ThreadManager.h"
 #include "Service.h"
 #include "GameSession.h"
-
+#include "GameSessionManager.h"
 
 int main()
 {
@@ -206,6 +206,27 @@ int main()
 	}
 
 
+	char SendData[1000] = "Hello World";
+
+	while (true)
+	{
+		SendBufferRef sendBuffer = GSendBufferManager->Open(4096);
+		
+		BYTE* buffer = sendBuffer->GetBuffer();
+		
+		// 여기서 사이즈를 잘못 기입하면? 엉뚱한 데이터를 파싱할 수 있다. 보안 관련부분에서 주의해야함
+		((PacketHeader*)buffer)->size = (sizeof(SendData) + sizeof(PacketHeader));
+		
+		((PacketHeader*)buffer)->id = 1;
+		::memcpy(&buffer[4], SendData, sizeof(SendData));
+		sendBuffer->Close((sizeof(SendData) + sizeof(PacketHeader)));
+
+		//for(int i=0; i<5; ++i) // 패킷을 강제로 뭉쳐서 하는경우
+		GSessionManager.Broadcast(sendBuffer);
+
+		this_thread::sleep_for(250ms);
+	}
+	
 
 	GThreadManager->Join();
 }
