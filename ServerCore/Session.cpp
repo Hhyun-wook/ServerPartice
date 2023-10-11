@@ -3,7 +3,8 @@
 #include "SocketUtils.h"
 #include "Service.h"
 
-Session::Session()
+Session::Session() :
+	_recvBuffer(BUFFER_SIZE)
 {
 	_socket = SocketUtils::createSocket();
 }
@@ -80,7 +81,7 @@ void Session::Dispatch(IocpEvent* IocpEvent, int32 numofBytes)
 	
 }
 
-bool Session::RegisterConnect()
+bool Session::RegisterConnect() 
 {
 	if (IsConnected())
 		return false;
@@ -132,7 +133,7 @@ bool Session::RegisterDisConnect()
 	return true;
 }
 
-void Session::RegisterRecv()
+void Session::RegisterRecv() // 실질적으로 한번에 한쓰레드만 들어오기 때문에 멀티쓰레드를 신경 X
 {
 	if (IsConnected() == false)
 		return;
@@ -141,8 +142,8 @@ void Session::RegisterRecv()
 	_recvEvent.owner = shared_from_this();
 
 	WSABUF wsaBuf;
-	wsaBuf.buf = reinterpret_cast<char*>(_recvBuffer);
-	wsaBuf.len = len32(_recvBuffer);
+	wsaBuf.buf = reinterpret_cast<char*>(_recvBuffer.WritePos()); 
+	wsaBuf.len = _recvBuffer.FreeSize(); 
 
 	DWORD numOfBytes = 0;
 	DWORD flags = 0;
@@ -214,8 +215,25 @@ void Session::ProcessRecv(int32 numOfBytes)
 		return; 
 	}
 
-	// 컨텐츠 코드에서 오버라이딩
-	OnRecv(_recvBuffer, numOfBytes);
+	if (_recvBuffer.OnWrite(numOfBytes))
+	{
+		Disconnect(L"OnWrite overFlow");
+		return;
+	}
+	
+	int32 dataSize = _recvBuffer.DataSize();
+
+
+
+	int32 ProcessLen = OnRecv(_recvBuffer.ReadPos(), dataSize); 	// 컨텐츠 코드에서 오버라이딩
+	if (ProcessLen < 0 || dataSize < ProcessLen || _recvBuffer.OnRead(ProcessLen) == false)
+	{
+		Disconnect(L"OnRead OverFlow");
+		return;
+	}
+
+	//커서 정리
+	_recvBuffer.Clean();
 
 	// 수신 등록
 	RegisterRecv();
