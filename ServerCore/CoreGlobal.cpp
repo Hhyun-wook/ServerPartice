@@ -4,12 +4,12 @@
 #include "DeadlockProfiler.h"
 #include "Memory.h"
 #include "SocketUtils.h"
-
+#include "SendBuffer.h"
 
 ThreadManager* GThreadManager = nullptr;
 DeadlockProfiler* GDeadLockProfiler = nullptr;
 Memory* GMemory = nullptr;
-
+SendBufferManager* GSendBufferManager = nullptr;
 class CoreGlobal
 {
 public:
@@ -18,6 +18,7 @@ public:
 		GThreadManager = new ThreadManager();
 		GMemory = new Memory();
 		GDeadLockProfiler = new DeadlockProfiler();
+		GSendBufferManager = new SendBufferManager();
 		SocketUtils::Init();
 	
 	}
@@ -27,6 +28,7 @@ public:
 		delete GThreadManager;
 		delete GMemory;
 		delete GDeadLockProfiler;
+		delete GSendBufferManager;
 		SocketUtils::Clear();
 	}
 

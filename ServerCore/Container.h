@@ -6,6 +6,7 @@
 #include <vector>
 #include <list>
 #include <map>
+#include <array>
 #include <set>
 #include <stack>
 #include <queue>
@@ -13,6 +14,9 @@
 #include <unordered_set>
 
 using namespace std;
+
+template <typename Type,uint32 Size>
+using xArray = array<Type, Size>;
 
 template <typename T>
 using xVector = vector<T, StlAllocator<T>>;
