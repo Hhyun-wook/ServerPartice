@@ -1,6 +1,4 @@
-﻿  pch.cpp
-  GameServer.cpp
+﻿  GameServer.cpp
   GameSession.cpp
-  GameSessionManager.cpp
   코드를 생성하고 있습니다...
-  GameServer.vcxproj -> C:\Users\cokou\source\repos\ServerPartice\Binary\Debug\GameServer.exe
+LINK : fatal error LNK1104: 'C:\Users\cokou\source\repos\ServerPartice\Binary\Debug\GameServer.exe' 파일을 열 수 없습니다.

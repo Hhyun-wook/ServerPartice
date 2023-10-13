@@ -1,5 +1,7 @@
 ﻿  pch.cpp
   Allocator.cpp
+  BufferReader.cpp
+  BufferWriter.cpp
   CoreGlobal.cpp
   CorePch.cpp
   CoreTLS.cpp
@@ -17,6 +19,8 @@
   Service.cpp
   Session.cpp
   SocketUtils.cpp
+  코드를 생성하고 있습니다...
+  컴파일하고 있습니다...
   ThreadManager.cpp
   코드를 생성하고 있습니다...
   ServerCore.vcxproj -> C:\Users\cokou\source\repos\ServerPartice\Libraries\Debug\ServerCore.lib
